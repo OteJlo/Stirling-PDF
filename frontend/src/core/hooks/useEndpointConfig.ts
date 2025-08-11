@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useRequestHeaders } from '@app/hooks/useRequestHeaders';
 
+// Helper to get JWT from localStorage for Authorization header
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('stirling_jwt');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 /**
  * Hook to check if a specific endpoint is enabled
+ * This wraps the context for single endpoint checks
  */
 export function useEndpointEnabled(endpoint: string): {
   enabled: boolean | null;
@@ -27,7 +34,7 @@ export function useEndpointEnabled(endpoint: string): {
       setError(null);
 
       const response = await fetch(`/api/v1/config/endpoint-enabled?endpoint=${encodeURIComponent(endpoint)}`, {
-        headers,
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -86,7 +93,7 @@ export function useMultipleEndpointsEnabled(endpoints: string[]): {
       const endpointsParam = endpoints.join(',');
 
       const response = await fetch(`/api/v1/config/endpoints-enabled?endpoints=${encodeURIComponent(endpointsParam)}`, {
-        headers,
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {

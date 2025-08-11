@@ -63,7 +63,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const fetchConfig = async (force = false) => {
     // Prevent duplicate fetches unless forced
     if (!force && fetchCount > 0) {
-      console.debug('[AppConfigContext] Config already fetched, skipping (fetch count:', fetchCount, ')');
+      console.debug('[AppConfig] Config already fetched, skipping (fetch count:', fetchCount, ')');
       return;
     }
 
@@ -72,7 +72,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     const hasJwt = !!localStorage.getItem('stirling_jwt');
 
     if (isLoginPage && !hasJwt) {
-      console.debug('[AppConfigContext] On login page without JWT - using default config');
+      console.debug('[AppConfig] On login page without JWT - using default config');
       setConfig({ enableLogin: true });
       setLoading(false);
       return;
@@ -83,7 +83,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       console.debug('[AppConfig] Fetching config (attempt #', fetchCount + 1, ')');
       setLoading(true);
       setError(null);
-
+      setHasFetched(true);
       const response = await fetch('/api/v1/config/app-config', {
         headers: getAuthHeaders(),
       });
@@ -93,6 +93,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
         if (response.status === 401) {
           console.debug('[AppConfig] 401 error - using default config (login enabled)');
           setConfig({ enableLogin: true });
+          setLoading(false);
           return;
         }
         throw new Error(`Failed to fetch config: ${response.status} ${response.statusText}`);
@@ -114,6 +115,11 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Only fetch config if we have JWT or if checking for anonymous mode
+    const hasJwt = !!localStorage.getItem('stirling_jwt');
+
+    // Always try to fetch config to check if login is disabled
+    // The endpoint should be public and return proper JSON
     fetchConfig();
   }, []);
 
