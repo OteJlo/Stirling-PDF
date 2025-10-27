@@ -16,7 +16,9 @@ export interface AppConfig {
   languages?: string[];
   enableLogin?: boolean;
   enableAlphaFunctionality?: boolean;
-  enableAnalytics?: boolean;
+  enableAnalytics?: boolean | null;
+  enablePosthog?: boolean | null;
+  enableScarf?: boolean | null;
   premiumEnabled?: boolean;
   premiumKey?: string;
   termsAndConditions?: string;
@@ -39,7 +41,7 @@ interface AppConfigContextType {
   refetch: () => Promise<void>;
 }
 
-const AppConfigContext = createContext<AppConfigContextType>({
+const AppConfigContext = createContext<AppConfigContextValue | undefined>({
   config: null,
   loading: true,
   error: null,
@@ -47,8 +49,8 @@ const AppConfigContext = createContext<AppConfigContextType>({
 });
 
 /**
- * AppConfig Provider - Singleton pattern to prevent duplicate fetches
- * This ensures config is fetched only once globally
+ * Provider component that fetches and provides app configuration
+ * Should be placed at the top level of the app, before any components that need config
  */
 export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig | null>(null);
@@ -74,8 +76,9 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+  const fetchConfig = async () => {
     try {
-      console.debug('[AppConfigContext] Fetching config (attempt #', fetchCount + 1, ')');
+      console.debug('[AppConfig] Fetching config (attempt #', fetchCount + 1, ')');
       setLoading(true);
       setError(null);
 
@@ -86,7 +89,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       if (!response.ok) {
         // On 401 (not authenticated), use default config with login enabled
         if (response.status === 401) {
-          console.debug('[AppConfigContext] 401 error - using default config (login enabled)');
+          console.debug('[AppConfig] 401 error - using default config (login enabled)');
           setConfig({ enableLogin: true });
           return;
         }
@@ -94,13 +97,13 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       }
 
       const data: AppConfig = await response.json();
-      console.debug('[AppConfigContext] Config fetched successfully:', data);
+      console.debug('[AppConfig] Config fetched successfully:', data);
       setConfig(data);
       setFetchCount(prev => prev + 1);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
-      console.error('[AppConfigContext] Failed to fetch app config:', err);
+      console.error('[AppConfig] Failed to fetch app config:', err);
       // On error, assume login is enabled (safe default)
       setConfig({ enableLogin: true });
     } finally {
@@ -108,7 +111,6 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Initial fetch on mount
   useEffect(() => {
     fetchConfig();
   }, []);
@@ -116,7 +118,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   // Listen for JWT availability (triggered on login/signup)
   useEffect(() => {
     const handleJwtAvailable = () => {
-      console.debug('[AppConfigContext] JWT available event - refetching config with auth');
+      console.debug('[AppConfig] JWT available event - refetching config with auth');
       fetchConfig(true); // Force refetch with JWT
     };
 
@@ -139,5 +141,6 @@ export function useAppConfig() {
   if (!context) {
     throw new Error('useAppConfig must be used within AppConfigProvider');
   }
+
   return context;
 }
