@@ -200,6 +200,18 @@ public class SecurityConfiguration {
                     });
             http.authenticationProvider(daoAuthenticationProvider());
             http.requestCache(requestCache -> requestCache.requestCache(new NullRequestCache()));
+
+            // Configure exception handling for API endpoints
+            http.exceptionHandling(
+                    exceptions ->
+                            exceptions.defaultAuthenticationEntryPointFor(
+                                    jwtAuthenticationEntryPoint,
+                                    request -> {
+                                        String contextPath = request.getContextPath();
+                                        String requestURI = request.getRequestURI();
+                                        return requestURI.startsWith(contextPath + "/api/");
+                                    }));
+
             http.logout(
                     logout ->
                             logout.logoutRequestMatcher(
@@ -267,7 +279,6 @@ public class SecurityConfiguration {
                                                                 "/api/v1/auth/login")
                                                         || trimmedUri.startsWith(
                                                                 "/api/v1/auth/refresh")
-                                                        || trimmedUri.startsWith("/api/v1/auth/me")
                                                         || trimmedUri.startsWith("/v1/api-docs")
                                                         || uri.contains("/v1/api-docs");
                                             })
@@ -338,8 +349,12 @@ public class SecurityConfiguration {
                         .saml2Login(
                                 saml2 -> {
                                     try {
-                                        saml2.loginPage("/saml2")
-                                                .relyingPartyRegistrationRepository(
+                                        // Only set login page for v1/Thymeleaf mode
+                                        if (!v2Enabled) {
+                                            saml2.loginPage("/saml2");
+                                        }
+
+                                        saml2.relyingPartyRegistrationRepository(
                                                         saml2RelyingPartyRegistrations)
                                                 .authenticationManager(
                                                         new ProviderManager(authenticationProvider))
