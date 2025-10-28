@@ -11,6 +11,8 @@ import { SidebarProvider } from "./contexts/SidebarContext";
 import { PreferencesProvider } from "./contexts/PreferencesContext";
 import { OnboardingProvider } from "./contexts/OnboardingContext";
 import { TourOrchestrationProvider } from "./contexts/TourOrchestrationContext";
+import { AppConfigProvider } from "./contexts/AppConfigContext";
+import { EndpointConfigProvider } from "./contexts/EndpointConfigContext";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 import OnboardingTour from "./components/onboarding/OnboardingTour";
 
@@ -55,45 +57,49 @@ export default function App() {
         <RainbowThemeProvider>
           <ErrorBoundary>
             <AuthProvider>
-              <Routes>
-                {/* Auth routes - no FileContext or other providers needed */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
+              <AppConfigProvider>
+                <EndpointConfigProvider>
+                  <Routes>
+                    {/* Auth routes - no FileContext or other providers needed */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
 
-                {/* Main app routes - wrapped with all providers */}
-                <Route
-                  path="/*"
-                  element={
-                    <OnboardingProvider>
-                      <FileContextProvider enableUrlSync={true} enablePersistence={true}>
-                        <ToolRegistryProvider>
-                          <NavigationProvider>
-                            <FilesModalProvider>
-                              <ToolWorkflowProvider>
-                                <HotkeyProvider>
-                                  <SidebarProvider>
-                                    <ViewerProvider>
-                                      <SignatureProvider>
-                                        <RightRailProvider>
-                                          <TourOrchestrationProvider>
-                                            <Landing />
-                                            <OnboardingTour />
-                                          </TourOrchestrationProvider>
-                                        </RightRailProvider>
-                                        </SignatureProvider>
-                                      </ViewerProvider>
-                                    </SidebarProvider>
-                                  </HotkeyProvider>
-                                </ToolWorkflowProvider>
-                              </FilesModalProvider>
-                            </NavigationProvider>
-                          </ToolRegistryProvider>
-                        </FileContextProvider>
-                      </OnboardingProvider>
-                  }
-                />
-              </Routes>
+                    {/* Main app routes - wrapped with all providers */}
+                    <Route
+                      path="/*"
+                      element={
+                        <OnboardingProvider>
+                          <FileContextProvider enableUrlSync={true} enablePersistence={true}>
+                            <ToolRegistryProvider>
+                              <NavigationProvider>
+                                <FilesModalProvider>
+                                  <ToolWorkflowProvider>
+                                    <HotkeyProvider>
+                                      <SidebarProvider>
+                                        <ViewerProvider>
+                                          <SignatureProvider>
+                                            <RightRailProvider>
+                                              <TourOrchestrationProvider>
+                                                <Landing />
+                                                <OnboardingTour />
+                                              </TourOrchestrationProvider>
+                                            </RightRailProvider>
+                                            </SignatureProvider>
+                                          </ViewerProvider>
+                                        </SidebarProvider>
+                                      </HotkeyProvider>
+                                    </ToolWorkflowProvider>
+                                  </FilesModalProvider>
+                                </NavigationProvider>
+                              </ToolRegistryProvider>
+                            </FileContextProvider>
+                          </OnboardingProvider>
+                      }
+                    />
+                  </Routes>
+                </EndpointConfigProvider>
+              </AppConfigProvider>
             </AuthProvider>
           </ErrorBoundary>
         </RainbowThemeProvider>
