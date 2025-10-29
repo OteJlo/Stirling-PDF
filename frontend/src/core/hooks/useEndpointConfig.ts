@@ -24,7 +24,7 @@ export function useEndpointEnabled(endpoint: string): {
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const headers = useRequestHeaders();
+  const _headers = useRequestHeaders();
 
   const fetchEndpointStatus = async () => {
     if (!endpoint) {
@@ -105,8 +105,8 @@ export function useMultipleEndpointsEnabled(endpoints: string[]): {
   const [endpointStatus, setEndpointStatus] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastFetchedEndpoints, setLastFetchedEndpoints] = useState<string>('');
-  const headers = useRequestHeaders();
+  const [_lastFetchedEndpoints, setLastFetchedEndpoints] = useState<string>('');
+  const _headers = useRequestHeaders();
 
   const fetchAllEndpointStatuses = async (force = false) => {
     const endpointsKey = [...endpoints].sort().join(',');

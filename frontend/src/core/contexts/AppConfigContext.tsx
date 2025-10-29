@@ -35,7 +35,7 @@ export interface AppConfig {
   error?: string;
 }
 
-interface AppConfigContextType {
+interface AppConfigContextValue {
   config: AppConfig | null;
   loading: boolean;
   error: string | null;
@@ -57,8 +57,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const headers = useRequestHeaders();
-  const [hasFetched, setHasFetched] = useState(false);
+  const _headers = useRequestHeaders();
+  const [_hasFetched, setHasFetched] = useState(false);
   const [fetchCount, setFetchCount] = useState(0);
 
   const fetchConfig = async (force = false) => {
@@ -79,7 +79,6 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-  const fetchConfig = async () => {
     try {
       console.debug('[AppConfig] Fetching config (attempt #', fetchCount + 1, ')');
       setLoading(true);
@@ -145,7 +144,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
 /**
  * Hook to use app config from context
  */
-export function useAppConfig() {
+export function useAppConfig(): AppConfigContextValue {
   const context = useContext(AppConfigContext);
   if (!context) {
     throw new Error('useAppConfig must be used within AppConfigProvider');
@@ -153,3 +152,5 @@ export function useAppConfig() {
 
   return context;
 }
+
+
