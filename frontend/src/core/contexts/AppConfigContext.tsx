@@ -58,12 +58,13 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const headers = useRequestHeaders();
+  const [hasFetched, setHasFetched] = useState(false);
   const [fetchCount, setFetchCount] = useState(0);
 
   const fetchConfig = async (force = false) => {
     // Prevent duplicate fetches unless forced
     if (!force && fetchCount > 0) {
-      console.debug('[AppConfig] Config already fetched, skipping (fetch count:', fetchCount, ')');
+      console.debug('[AppConfig] Config already fetched, skipping');
       return;
     }
 
